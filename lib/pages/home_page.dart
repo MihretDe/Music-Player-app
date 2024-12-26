@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:music/themes/theme_provider.dart';
 import 'package:music/models/song.dart';
 import 'package:music/pages/song_page.dart';
+import 'package:music/pages/favourites.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -72,6 +73,16 @@ class _HomePageState extends State<HomePage> {
               ),
               onTap: () => Navigator.pop(context),
             ),
+            // ListTile(
+            //   title: const Text(
+            //     'Favorites',
+            //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            //   ),
+            //     onTap: () => Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) =>  FavoritesPage()),
+            //     ),
+            // ),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -156,45 +167,32 @@ class _HomePageState extends State<HomePage> {
                     return GestureDetector(
                       onTap: () => goToSong(index),
                       child: Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(8.0),
-                          leading: Hero(
-                            tag: 'albumArt-$index',
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                song.albumArtImagePath,
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.cover,
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(8.0),
+                            title: Text(
+                              song.songName,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
                               ),
                             ),
-                          ),
-                          title: Text(
-                            song.songName,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
+                            subtitle: Text(
+                              song.artistName,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: textColor.withOpacity(0.7),
+                              ),
                             ),
-                          ),
-                          subtitle: Text(
-                            song.artistName,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: textColor.withOpacity(0.7),
-                            ),
-                          ),
-                          trailing: Icon(Icons.play_arrow,
-                              color: textColor, size: 28),
-                        ),
-                      ),
+                            trailing: Icon(Icons.play_arrow,
+                                color: textColor, size: 28),
+                          )),
                     );
                   },
                 ),

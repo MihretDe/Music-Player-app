@@ -1,65 +1,109 @@
 import 'package:flutter/material.dart';
 import 'package:music/models/song.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class PlaylistProvider extends ChangeNotifier {
-  final List<Song> _playlist = [
-    Song(
-      songName: 'Song 1',
-      artistName: 'Artist 1',
-      albumArtImagePath: 'assets/image/dawit.jpg',
-      audioPath: 'audio/እንግዳ_ነኝ_እኔ_ስኖር_በዚህች_አለም.ogg',
-    ),
-    Song(
-      songName: 'Song 2',
-      artistName: 'Artist 2',
-      albumArtImagePath: 'assets/image/dawit.jpg',
-      audioPath: 'audio/4. Zema 4 Christ - Nuro Kegeta Keyesus Gare (128).mp3',
-    ),
-    Song(
-      songName: 'Song 3',
-      artistName: 'Artist 3',
-      albumArtImagePath: 'assets/image/dawit.jpg',
-      audioPath:
-          'audio/Bemaebel_Wust_በማዕበል_ውስጥ_Dawit_Getachew_live_at_Addis_Ababa_N.m4a',
-    ),
-  ];
+  final List<Song> _playlist = [];
   int? _currentSongIndex;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   Duration _currentDuration = Duration.zero;
   Duration _totalDuration = Duration.zero;
-  //constructor
+
+  // Constructor
   PlaylistProvider() {
     listenToDuration();
+    requestStoragePermission();
   }
-  // initially not playing
+
+  // Initially not playing
   bool _isPlaying = false;
-  //play the song
+
+  Future<void> requestStoragePermission() async {
+    final storagePermission = await Permission.manageExternalStorage.request();
+    if (storagePermission.isGranted) {
+      print('MANAGE_EXTERNAL_STORAGE permission granted');
+      await loadAllFiles(); // Proceed to load files
+    } else {
+      print('MANAGE_EXTERNAL_STORAGE permission denied');
+    }
+  }
+
+  // Load music files from local storage
+  Future<void> loadAllFiles() async {
+    try {
+      final Directory rootDir =
+          Directory('/storage/emulated/0/Music'); // Root of external storage
+      final List<FileSystemEntity> files =
+          rootDir.listSync(recursive: true, followLinks: false);
+      // print(files);
+      for (var file in files) {
+        if (file is File && _isAudioFile(file.path)) {
+          // print('Audio file found: ${file.path}');
+          String fileName = p.basenameWithoutExtension(
+              file.path); 
+
+          List<String> parts = fileName.split(' - ');
+
+          String artistName = 'Unknown';
+          String songName = fileName;
+
+          if (parts.length == 2) {
+            artistName = parts[0];
+            songName = parts[1];
+          }
+
+          
+          _playlist.add(Song(
+            audioPath: file.path,
+            artistName: artistName,
+            songName: songName,
+          ));
+        }
+      }
+      notifyListeners();
+      // print("playlist: $_playlist");
+    } catch (e) {
+      print("Error accessing files: $e");
+    }
+  }
+
+  // Check if the file is an audio file
+  bool _isAudioFile(String path) {
+    const List<String> audioExtensions = ['.mp3', '.m4a', '.wav', '.ogg'];
+    return audioExtensions.any((ext) => path.toLowerCase().endsWith(ext));
+  }
+
+  // Play the selected song
   void play() async {
+    if (_currentSongIndex == null) return;
     final String path = _playlist[_currentSongIndex!].audioPath;
     print('$path path');
     await _audioPlayer.stop();
-    await _audioPlayer.play(AssetSource(path));
+    await _audioPlayer.play(DeviceFileSource(path));
     _isPlaying = true;
     notifyListeners();
   }
 
-  //pause current song
+  // Pause the current song
   void pause() async {
     await _audioPlayer.pause();
     _isPlaying = false;
     notifyListeners();
   }
 
-  //resume playing
+  // Resume playing
   void resume() async {
     await _audioPlayer.resume();
     _isPlaying = true;
     notifyListeners();
   }
 
-  //pause or resume
+  // Pause or resume
   void playOrPause() {
     if (_isPlaying) {
       pause();
@@ -68,12 +112,12 @@ class PlaylistProvider extends ChangeNotifier {
     }
   }
 
-  //seek to a specific position
+  // Seek to a specific position
   void seek(Duration position) async {
     await _audioPlayer.seek(position);
   }
 
-  //play previous song
+  // Play previous song
   void playPrevious() {
     if (_currentSongIndex == 0) {
       _currentSongIndex = _playlist.length - 1;
@@ -83,7 +127,7 @@ class PlaylistProvider extends ChangeNotifier {
     play();
   }
 
-  //play next song
+  // Play next song
   void playNext() {
     if (_currentSongIndex == _playlist.length - 1) {
       _currentSongIndex = 0;
@@ -93,7 +137,7 @@ class PlaylistProvider extends ChangeNotifier {
     play();
   }
 
-  //listen to duration
+  // Listen to duration changes
   void listenToDuration() {
     _audioPlayer.onDurationChanged.listen((newDuration) {
       _totalDuration = newDuration;
@@ -107,19 +151,26 @@ class PlaylistProvider extends ChangeNotifier {
       playNext();
     });
   }
-  //dispose of the audio player
 
+  // Dispose of the audio player
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  // Getters and Setters
   List<Song> get playlist => _playlist;
   int? get currentSongIndex => _currentSongIndex;
   bool get isPlaying => _isPlaying;
   Duration get currentDuration => _currentDuration;
   Duration get totalDuration => _totalDuration;
+
   set currentSongIndex(int? newIndex) {
     _currentSongIndex = newIndex;
     if (newIndex != null) {
       play();
     }
-
     notifyListeners();
   }
 }

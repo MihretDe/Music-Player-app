@@ -2,14 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:music/componenets/box.dart';
 import 'package:music/models/playlist_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:music/models/song.dart';
+import 'package:music/utility/favourities.dart';
 
-class SongPage extends StatelessWidget {
-  const SongPage({Key? key}) : super(key: key);
+class SongPage extends StatefulWidget {
+  const SongPage({super.key});
+
+  @override
+  State<SongPage> createState() => _SongPageState();
+}
+
+class _SongPageState extends State<SongPage> {
+  late List<Song> playlist;
+  @override
+  void initState() {
+    super.initState();
+    // Load the favorites when the page loads
+    final playlist =
+        Provider.of<PlaylistProvider>(context, listen: false).playlist;
+    loadFavorites(playlist);
+  }
 
   String formatTime(Duration duration) {
     String twoDigitSeconds =
         duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return "${duration.inMinutes}:${twoDigitSeconds}";
+  }
+
+  void toggleFavorite(Song song) {
+    setState(() {
+      song.isFavorite = !song.isFavorite;
+    });
+    // Save the updated favorites to SharedPreferences
+    saveFavorites(playlist);
   }
 
   @override
@@ -57,10 +82,8 @@ class SongPage extends StatelessWidget {
                   Box(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(15),
-                      child: Image.asset(
-                        currentSong.albumArtImagePath,
-                        fit: BoxFit.cover,
-                      ),
+                      child:
+                          Image(image: AssetImage('assets/image/songBg.jpg')),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -185,8 +208,39 @@ class SongPage extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 20),
+                      // Add Favorite Button
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              currentSong.isFavorite =
+                                  !currentSong.isFavorite; // Toggle favorite
+                            });
+                          },
+                          child: Box(
+                            backgroundColor: isDarkMode
+                                ? Colors.grey.shade800
+                                : Colors.purple.shade700,
+                            child: IconButton(
+                              icon: Icon(
+                                currentSong.isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: currentSong.isFavorite
+                                    ? Colors.red
+                                    : Colors.grey,
+                              ),
+                              onPressed: () {
+                                toggleFavorite(currentSong);
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+
                   const Spacer(),
                 ],
               ),
