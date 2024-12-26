@@ -5,131 +5,195 @@ import 'package:provider/provider.dart';
 
 class SongPage extends StatelessWidget {
   const SongPage({Key? key}) : super(key: key);
+
   String formatTime(Duration duration) {
-    String twoDigitSeconds = duration.inSeconds.remainder(60).toString();
-    String formattedTime = "${duration.inMinutes}:$twoDigitSeconds";
-    return formattedTime;
+    String twoDigitSeconds =
+        duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return "${duration.inMinutes}:${twoDigitSeconds}";
   }
+
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final backgroundGradient = isDarkMode
+        ? [Colors.black87, Colors.grey.shade900]
+        : [Colors.purple.shade800, Colors.blue.shade400];
+
+    final textColor = isDarkMode ? Colors.white70 : Colors.black87;
+    final iconColor = isDarkMode ? Colors.white : Colors.black54;
+
     return Consumer<PlaylistProvider>(
-        builder: (context, value, child) {
-          final playlist = value.playlist;
-          final currentSong = playlist[value.currentSongIndex?? 0];
-          return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            appBar: AppBar(title: const Text('Song Page')),
-            body: Padding(
-              padding: const EdgeInsets.all(13.0),
+      builder: (context, value, child) {
+        final playlist = value.playlist;
+        final currentSong = playlist[value.currentSongIndex ?? 0];
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(
+              'Now Playing',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+          ),
+          extendBodyBehindAppBar: true,
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: backgroundGradient,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const SizedBox(height: 80), // Offset for AppBar
+                  // Album Art with Shadow
                   Box(
-                      child: Column(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(currentSong.albumArtImagePath),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Image.asset(
+                        currentSong.albumArtImagePath,
+                        fit: BoxFit.cover,
                       ),
-                      Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(currentSong.songName,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20)),
-                                  Text(currentSong.artistName,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15))
-                                ],
-                              ),
-                              Icon(
-                                Icons.favorite,
-                                color: Colors.red,
-                              ),
-                            ],
-                          )),
-                    ],
-                  )),
-                  const SizedBox(
-                    height: 25,
+                    ),
                   ),
+                  const SizedBox(height: 20),
+                  // Song and Artist Name
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 25),
+                    padding: const EdgeInsets.all(10.0),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(formatTime(value.currentDuration)),
-                            Icon(Icons.shuffle),
-                            Icon(Icons.repeat),
-                            Text(formatTime(value.totalDuration))
-                          ],
+                        Text(
+                          currentSong.songName,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          currentSong.artistName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: textColor.withOpacity(0.8),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  // Timer and Controls
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          formatTime(value.currentDuration),
+                          style: TextStyle(color: textColor),
+                        ),
+                        Icon(Icons.shuffle, color: iconColor),
+                        Icon(Icons.repeat, color: iconColor),
+                        Text(
+                          formatTime(value.totalDuration),
+                          style: TextStyle(color: textColor),
                         ),
                       ],
                     ),
                   ),
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
-                        thumbShape:
-                            const RoundSliderThumbShape(enabledThumbRadius: 0)),
+                      activeTrackColor:
+                          isDarkMode ? Colors.greenAccent : Colors.green,
+                      inactiveTrackColor: textColor.withOpacity(0.5),
+                      thumbColor:
+                          isDarkMode ? Colors.greenAccent : Colors.green,
+                      overlayColor: isDarkMode
+                          ? Colors.greenAccent.withOpacity(0.2)
+                          : Colors.green.withOpacity(0.2),
+                      thumbShape:
+                          const RoundSliderThumbShape(enabledThumbRadius: 8),
+                    ),
                     child: Slider(
                       min: 0,
                       max: value.totalDuration.inSeconds.toDouble(),
                       value: value.currentDuration.inSeconds.toDouble(),
-                      activeColor: Colors.green,
-                      onChanged: (double double) {
-                        // Update the slider value
-                      },
-                      onChangeEnd: (double double){
-                        value.seek(Duration(seconds: double.toInt()));
+                      onChanged: (newValue) {},
+                      onChangeEnd: (newValue) {
+                        value.seek(Duration(seconds: newValue.toInt()));
                       },
                     ),
                   ),
+                  const SizedBox(height: 15),
+                  // Playback Controls
                   Row(
                     children: [
                       Expanded(
                         child: GestureDetector(
                           onTap: value.playPrevious,
                           child: Box(
-                            child: Icon(Icons.skip_previous),
+                            child: const Icon(
+                              Icons.skip_previous,
+                              size: 32,
+                              color: Colors.white,
+                            ),
+                            backgroundColor: isDarkMode
+                                ? Colors.grey.shade800
+                                : Colors.purple.shade700,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        width: 20,
-                      ),
+                      const SizedBox(width: 20),
                       Expanded(
                         flex: 2,
                         child: GestureDetector(
                           onTap: value.playOrPause,
                           child: Box(
-                            child: Icon(value.isPlaying ? Icons.pause: Icons.play_arrow),
+                            child: Icon(
+                              value.isPlaying ? Icons.pause : Icons.play_arrow,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                            backgroundColor: isDarkMode
+                                ? Colors.green.shade800
+                                : Colors.green.shade700,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        width: 20,
-                      ),
+                      const SizedBox(width: 20),
                       Expanded(
                         child: GestureDetector(
                           onTap: value.playNext,
                           child: Box(
-                            child: Icon(Icons.skip_next),
+                            child: const Icon(
+                              Icons.skip_next,
+                              size: 32,
+                              color: Colors.white,
+                            ),
+                            backgroundColor: isDarkMode
+                                ? Colors.grey.shade800
+                                : Colors.purple.shade700,
                           ),
                         ),
                       ),
                     ],
-                  )
+                  ),
+                  const Spacer(),
                 ],
               ),
-            ));
-        });
+            ),
+          ),
+        );
+      },
+    );
   }
 }

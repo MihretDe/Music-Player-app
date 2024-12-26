@@ -19,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Access the provider here in didChangeDependencies, as context is available
     playlistProvider = Provider.of<PlaylistProvider>(context, listen: false);
   }
 
@@ -28,16 +27,25 @@ class _HomePageState extends State<HomePage> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SongPage()),
+      MaterialPageRoute(builder: (context) => const SongPage()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white70 : Colors.black87;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Music Player'),
+        title: const Text(
+          'Music Player',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
       drawer: Drawer(
         child: ListView(
@@ -45,28 +53,41 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                gradient: LinearGradient(
+                  colors: isDarkMode
+                      ? [Colors.black87, Colors.grey.shade800]
+                      : [Colors.purple.shade400, Colors.blue.shade300],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
-              child: const Icon(Icons.music_note, size: 100),
+              child: const Center(
+                child: Icon(Icons.music_note, size: 100, color: Colors.white),
+              ),
             ),
             ListTile(
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              title: const Text(
+                'Home',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
+              onTap: () => Navigator.pop(context),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                const Text('Dark Mode'),
-                CupertinoSwitch(
-                  value: Provider.of<ThemeProvider>(context, listen: false)
-                      .isDarkMode,
-                  onChanged: (value) =>
-                      Provider.of<ThemeProvider>(context, listen: false)
-                          .toggleTheme(),
-                ),
-              ],
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  const Text('Dark Mode', style: TextStyle(fontSize: 16)),
+                  CupertinoSwitch(
+                    value: Provider.of<ThemeProvider>(context, listen: false)
+                        .isDarkMode,
+                    onChanged: (value) =>
+                        Provider.of<ThemeProvider>(context, listen: false)
+                            .toggleTheme(),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -75,25 +96,110 @@ class _HomePageState extends State<HomePage> {
         builder: (context, value, child) {
           final List<Song>? playlist = value.playlist;
 
-          // Check if playlist is null or empty before building the ListView
           if (playlist == null || playlist.isEmpty) {
-            return Center(child: Text("No songs available"));
+            return Center(
+              child: Text(
+                "No songs available",
+                style: TextStyle(fontSize: 18, color: textColor),
+              ),
+            );
           }
 
-          return ListView.builder(
-            itemCount: playlist.length,
-            itemBuilder: (context, index) {
-              final Song song = playlist[index];
-              return ListTile(
-                title: Text(song.songName),
-                subtitle: Text(song.artistName),
-                leading: Image.asset(song.albumArtImagePath),
-                onTap: () {
-                  // Pass the selected index to the goToSong function
-                  goToSong(index);
-                },
-              );
-            },
+          return Column(
+            children: [
+              // Header Section
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                    vertical: 20.0, horizontal: 16.0),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDarkMode
+                        ? [Colors.black87, Colors.grey.shade800]
+                        : [Colors.purple.shade400, Colors.blue.shade300],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius:
+                      const BorderRadius.vertical(bottom: Radius.circular(20)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome Back!',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Your Playlist',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Song List Section
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8.0),
+                  itemCount: playlist.length,
+                  itemBuilder: (context, index) {
+                    final Song song = playlist[index];
+                    return GestureDetector(
+                      onTap: () => goToSong(index),
+                      child: Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(8.0),
+                          leading: Hero(
+                            tag: 'albumArt-$index',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                song.albumArtImagePath,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            song.songName,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                          subtitle: Text(
+                            song.artistName,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: textColor.withOpacity(0.7),
+                            ),
+                          ),
+                          trailing: Icon(Icons.play_arrow,
+                              color: textColor, size: 28),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),

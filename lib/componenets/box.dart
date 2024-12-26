@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class Box extends StatelessWidget {
   final Widget? child;
-  const Box({super.key, this.child});
+  final Color? backgroundColor;
+  const Box({super.key, this.child, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class Box extends StatelessWidget {
             BoxShadow(
                 color: Colors.grey.shade500,
                 blurRadius: 15,
-                offset: Offset(-4, -4)),
+                offset: Offset(-2, -2)),
           ]),
       padding: const EdgeInsets.all(12),
       child: child,
