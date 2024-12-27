@@ -42,7 +42,10 @@ class _SongPageState extends State<SongPage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundGradient = isDarkMode
         ? [Colors.black87, Colors.grey.shade900]
-        : [Colors.purple.shade800, Colors.blue.shade400];
+        : [
+            Color(0xFFEE0979), // Bright Pink
+            Color(0xFFFF6A00), // Neon Orange
+          ];
 
     final textColor = isDarkMode ? Colors.white70 : Colors.black87;
     final iconColor = isDarkMode ? Colors.white : Colors.black54;

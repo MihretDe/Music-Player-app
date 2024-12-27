@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late PlaylistProvider playlistProvider;
-
+  bool isPlaying = false;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -25,11 +25,24 @@ class _HomePageState extends State<HomePage> {
 
   void goToSong(int songIndex) {
     playlistProvider.currentSongIndex = songIndex;
-
+    setState(() {
+      isPlaying = true; // Set playing state when navigating to a song
+    });
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SongPage()),
     );
+  }
+
+  void togglePlayPause() {
+    setState(() {
+      isPlaying = !isPlaying;
+    });
+    playOrPause();
+  }
+
+  void playOrPause() {
+    // Add your play or pause functionality here
   }
 
   @override
@@ -57,7 +70,10 @@ class _HomePageState extends State<HomePage> {
                 gradient: LinearGradient(
                   colors: isDarkMode
                       ? [Colors.black87, Colors.grey.shade800]
-                      : [Colors.purple.shade400, Colors.blue.shade300],
+                      : [
+                          Color(0xFFEE0979), // Bright Pink
+                          Color(0xFFFF6A00), // Neon Orange
+                        ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -127,7 +143,10 @@ class _HomePageState extends State<HomePage> {
                   gradient: LinearGradient(
                     colors: isDarkMode
                         ? [Colors.black87, Colors.grey.shade800]
-                        : [Colors.purple.shade400, Colors.blue.shade300],
+                        : [
+                            Color(0xFFEE0979), // Bright Pink
+                            Color(0xFFFF6A00), // Neon Orange
+                          ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -198,6 +217,68 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ],
+          );
+        },
+      ),
+      bottomNavigationBar: Consumer<PlaylistProvider>(
+        builder: (context, value, child) {
+          final currentSongIndex = playlistProvider.currentSongIndex;
+          if (currentSongIndex == null || currentSongIndex < 0) {
+            return const SizedBox.shrink(); // Hide if no song is playing
+          }
+
+          final currentSong = playlistProvider.playlist![currentSongIndex];
+
+          return BottomAppBar(
+            color: Theme.of(context).primaryColor,
+            child: Container(
+              height: 70,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        currentSong.songName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        currentSong.artistName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(
+                      value.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: value.playOrPause,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      playlistProvider.currentSongIndex = null;
+                      setState(() {
+                        isPlaying = false;
+                      });
+                    },
+                  )
+                ],
+              ),
+            ),
           );
         },
       ),
