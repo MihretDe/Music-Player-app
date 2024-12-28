@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:music/models/playlist_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:music/themes/theme_provider.dart';
+import 'package:music/models/playlist_provider.dart';
 import 'package:music/models/song.dart';
-import 'package:music/pages/song_page.dart'; 
-import 'package:music/componenets/box.dart'; 
+import 'package:music/pages/song_page.dart';
 
 class FavoritesPage extends StatelessWidget {
-
   // Function to navigate to SongPage
   void goToSong(BuildContext context, int songIndex) {
-    // Access PlaylistProvider to set the current song index
-    final playlistProvider = Provider.of<PlaylistProvider>(context, listen: false);
+    final playlistProvider =
+        Provider.of<PlaylistProvider>(context, listen: false);
     playlistProvider.currentSongIndex = songIndex;
 
-    // Navigate to SongPage
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SongPage()),
@@ -24,78 +19,128 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorite Songs')),
-      body: Consumer<PlaylistProvider>(
-        builder: (context, value, child) {
-          final List<Song>? playlist = value.playlist; // Access the playlist
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text(
+          'Favorite Songs',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: Stack(
+        children: [
+          // Background gradient
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDarkMode
+                    ? [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)]
+                    : [Color(0xFF1D2671), Color(0xFFC33764)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          // Main content
+          Consumer<PlaylistProvider>(
+            builder: (context, value, child) {
+              final List<Song>? playlist = value.playlist;
 
-          // Filter the playlist to get only favorite songs
-          final List<Song> favoriteSongs = playlist!.where((song) => song.isFavorite).toList();
-
-          return favoriteSongs.isEmpty
-              ? const Center(child: Text('No favorite songs yet.'))
-              : ListView.builder(
-                  itemCount: favoriteSongs.length,
-                  itemBuilder: (context, index) {
-                    final song = favoriteSongs[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          // Heart icon (disabled)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                            child: Icon(
-                              Icons.favorite,
-                              color: Colors.red.withOpacity(0.6), // Disabled appearance
-                              size: 28,
+              final List<Map<String, dynamic>> favoriteSongsWithIndices =
+                  playlist!
+                      .asMap()
+                      .entries
+                      .where((entry) => entry.value.isFavorite)
+                      .map((entry) => {
+                            'index':
+                                entry.key, // Original index in the playlist
+                            'song': entry.value, // The actual Song object
+                          })
+                      .toList();
+              return favoriteSongsWithIndices.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No favorite songs yet.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(
+                          top: 80.0), // Prevent overlap with AppBar
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 20.0,
+                        ),
+                        itemCount: favoriteSongsWithIndices.length,
+                        itemBuilder: (context, index) {
+                          final songData = favoriteSongsWithIndices[index];
+                          final song = songData['song'] as Song;
+                          final originalIndex = songData['index'];
+                          return Card(
+                            color: Colors.white.withOpacity(0.15),
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
                             ),
-                          ),
-                          
-                          // Song name and artist
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  song.songName,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  song.artistName,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.withOpacity(0.8),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          
-                          // Play button
-                          GestureDetector(
-                            onTap: () {
-                              goToSong(context, index); // Navigate to the song page
-                            },
-                            child: Box(
-                              child: Icon(
-                                Icons.play_arrow,
-                                size: 32,
-                                color: Colors.white,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12.0,
+                                horizontal: 16.0,
                               ),
-                              backgroundColor: Colors.purple.shade700,
+                              leading: Icon(
+                                Icons.favorite,
+                                color: Colors.redAccent,
+                                size: 28,
+                              ),
+                              title: Text(
+                                song.songName,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              subtitle: Text(
+                                song.artistName,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                              ),
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  goToSong(context, originalIndex);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withOpacity(0.2),
+                                  ),
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: const Icon(
+                                    Icons.play_arrow,
+                                    size: 24,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     );
-                  },
-                );
-        },
+            },
+          ),
+        ],
       ),
     );
   }

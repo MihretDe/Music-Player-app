@@ -14,13 +14,12 @@ class SongPage extends StatefulWidget {
 
 class _SongPageState extends State<SongPage> {
   late List<Song> playlist;
+
   @override
   void initState() {
     super.initState();
-    // Load the favorites when the page loads
-    final playlist =
-        Provider.of<PlaylistProvider>(context, listen: false).playlist;
-    loadFavorites(playlist);
+    playlist = Provider.of<PlaylistProvider>(context, listen: false).playlist;
+    loadFavorites(playlist); // Use the class-level playlist
   }
 
   String formatTime(Duration duration) {
@@ -41,11 +40,8 @@ class _SongPageState extends State<SongPage> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundGradient = isDarkMode
-        ? [Colors.black87, Colors.grey.shade900]
-        : [
-            Color(0xFFEE0979), // Bright Pink
-            Color(0xFFFF6A00), // Neon Orange
-          ];
+        ? [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)]
+        : [Color(0xFF1D2671), Color(0xFFC33764)];
 
     final textColor = isDarkMode ? Colors.white70 : Colors.black87;
     final iconColor = isDarkMode ? Colors.white : Colors.black54;

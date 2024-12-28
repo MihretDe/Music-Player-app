@@ -69,11 +69,12 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isDarkMode
-                      ? [Colors.black87, Colors.grey.shade800]
-                      : [
-                          Color(0xFFEE0979), // Bright Pink
-                          Color(0xFFFF6A00), // Neon Orange
-                        ],
+                      ? [
+                          Color(0xFF0F2027),
+                          Color(0xFF203A43),
+                          Color(0xFF2C5364)
+                        ]
+                      : [Color(0xFF1D2671), Color(0xFFC33764)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -89,16 +90,16 @@ class _HomePageState extends State<HomePage> {
               ),
               onTap: () => Navigator.pop(context),
             ),
-            // ListTile(
-            //   title: const Text(
-            //     'Favorites',
-            //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-            //   ),
-            //     onTap: () => Navigator.push(
-            //     context,
-            //     MaterialPageRoute(builder: (context) =>  FavoritesPage()),
-            //     ),
-            // ),
+            ListTile(
+              title: const Text(
+                'Favorites',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FavoritesPage()),
+              ),
+            ),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -142,11 +143,12 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isDarkMode
-                        ? [Colors.black87, Colors.grey.shade800]
-                        : [
-                            Color(0xFFEE0979), // Bright Pink
-                            Color(0xFFFF6A00), // Neon Orange
-                          ],
+                        ? [
+                            Color(0xFF0F2027),
+                            Color(0xFF203A43),
+                            Color(0xFF2C5364)
+                          ]
+                        : [Color(0xFF1D2671), Color(0xFFC33764)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -280,6 +282,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Icon(Icons.close),
                     onPressed: () {
                       playlistProvider.currentSongIndex = null;
+                      value.stopCurrentSong();
                       setState(() {
                         isPlaying = false;
                       });

@@ -15,4 +15,5 @@ Future<void> loadFavorites(List<Song> playlist) async {
       song.isFavorite = favoriteSongs.contains(song.songName);
     }
   }
+
 }

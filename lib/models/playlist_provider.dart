@@ -158,6 +158,9 @@ class PlaylistProvider extends ChangeNotifier {
     _audioPlayer.dispose();
     super.dispose();
   }
+  void stopCurrentSong() {
+  _audioPlayer.stop(); 
+}
 
   // Getters and Setters
   List<Song> get playlist => _playlist;
