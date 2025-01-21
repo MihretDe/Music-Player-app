@@ -34,6 +34,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
+ 
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -215,7 +218,7 @@ class _HomePageState extends State<HomePage> {
         builder: (context, value, child) {
           final currentSongIndex = playlistProvider.currentSongIndex;
           if (currentSongIndex == null || currentSongIndex < 0) {
-            return const SizedBox.shrink(); 
+            return const SizedBox.shrink(); // Hide if no song is playing
           }
 
           final currentSong = playlistProvider.playlist![currentSongIndex];
@@ -226,40 +229,36 @@ class _HomePageState extends State<HomePage> {
               height: 70,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Flexible(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SongPage(),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SongPage()),
+                      );
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentSong.songName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                        );
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            currentSong.songName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          currentSong.artistName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
                           ),
-                          Text(
-                            currentSong.artistName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white70,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   Spacer(),
@@ -280,7 +279,7 @@ class _HomePageState extends State<HomePage> {
                         isPlaying = false;
                       });
                     },
-                  ),
+                  )
                 ],
               ),
             ),
