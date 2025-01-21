@@ -19,7 +19,7 @@ class _SongPageState extends State<SongPage> {
   void initState() {
     super.initState();
     playlist = Provider.of<PlaylistProvider>(context, listen: false).playlist;
-    loadFavorites(playlist); // Use the class-level playlist
+    loadFavorites(playlist); 
   }
 
   String formatTime(Duration duration) {

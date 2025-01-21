@@ -27,7 +27,7 @@ class PlaylistProvider extends ChangeNotifier {
     final storagePermission = await Permission.manageExternalStorage.request();
     if (storagePermission.isGranted) {
       print('MANAGE_EXTERNAL_STORAGE permission granted');
-      await loadAllFiles(); // Proceed to load files
+      await loadAllFiles(); 
     } else {
       print('MANAGE_EXTERNAL_STORAGE permission denied');
     }
@@ -37,7 +37,7 @@ class PlaylistProvider extends ChangeNotifier {
   Future<void> loadAllFiles() async {
     try {
       final Directory rootDir =
-          Directory('/storage/emulated/0/Music'); // Root of external storage
+          Directory('/storage/emulated/0/Music'); 
       final List<FileSystemEntity> files =
           rootDir.listSync(recursive: true, followLinks: false);
       // print(files);

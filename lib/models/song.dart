@@ -1,13 +1,13 @@
-class Song{
+class Song {
   final String songName;
   final String artistName;
-bool isFavorite;
+  bool isFavorite;
   final String audioPath;
 
-  Song ({
+  Song({
     required this.songName,
     required this.artistName,
     required this.audioPath,
-    this.isFavorite = false, 
+    this.isFavorite = false,
   });
 }

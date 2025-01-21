@@ -3,8 +3,25 @@ import 'package:provider/provider.dart';
 import 'package:music/models/playlist_provider.dart';
 import 'package:music/models/song.dart';
 import 'package:music/pages/song_page.dart';
+import 'package:music/utility/favourities.dart';
 
-class FavoritesPage extends StatelessWidget {
+class FavoritesPage extends StatefulWidget {
+  const FavoritesPage({Key? key}) : super(key: key);
+
+  @override
+  _FavoritesPageState createState() => _FavoritesPageState();
+}
+
+class _FavoritesPageState extends State<FavoritesPage> {
+  late final List<Song> playlist;
+
+  @override
+  void initState() {
+    super.initState();
+    playlist = Provider.of<PlaylistProvider>(context, listen: false).playlist;
+    loadFavorites(playlist);
+  }
+
   // Function to navigate to SongPage
   void goToSong(BuildContext context, int songIndex) {
     final playlistProvider =
@@ -58,8 +75,8 @@ class FavoritesPage extends StatelessWidget {
                       .where((entry) => entry.value.isFavorite)
                       .map((entry) => {
                             'index':
-                                entry.key, // Original index in the playlist
-                            'song': entry.value, // The actual Song object
+                                entry.key, 
+                            'song': entry.value, 
                           })
                       .toList();
               return favoriteSongsWithIndices.isEmpty
@@ -74,7 +91,7 @@ class FavoritesPage extends StatelessWidget {
                     )
                   : Padding(
                       padding: const EdgeInsets.only(
-                          top: 80.0), // Prevent overlap with AppBar
+                          top: 80.0), 
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
