@@ -47,8 +47,6 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
   ```bash
   flutter run
 
----
-
 
 
 
