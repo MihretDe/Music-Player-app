@@ -28,6 +28,8 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
 4. Run the app:
   ```bash
   flutter run
+
+
 ## 💻 Usage
 
 ### Play Songs:
