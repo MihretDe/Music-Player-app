@@ -1,6 +1,6 @@
 # 🎵 Music App
 
-The Music App is a simple and elegant audio player that lets you enjoy your favorite tracks. With features like playing audio files, navigating through tracks, adding songs to your favorites, and a dedicated favorites page, it offers an immersive music experience.
+The Music App is a simple and elegant audio player that lets you enjoy your favorite tracks. With features like playing audio files, navigating through tracks, adding songs to your favorites, and a dedicated favorites page, it offers an immersive music experience. The app will also access your device storage to fetch audio files and ask for necessary permissions to ensure smooth functionality.
 
 ---
 
@@ -23,9 +23,27 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
    ```bash
    cd music-app
 3. Install dependencies:
-  ```bash
-  flutter pub get
+   ```bash
+   flutter pub get
 4. Run the app:
   ```bash
   flutter run
+## 💻 Usage
+
+### Play Songs:
+- Browse through the playlist to select your desired song (the app will access your storage to retrieve audio files).  
+- Tap the play button to begin playback.  
+
+### Navigate:
+- Use the "Next" and "Previous" buttons to switch tracks.
+
+### Seek Position:
+- Drag the progress bar to move to a specific part of the song.
+
+### Add to Favorites:
+- Tap the "Add to Favorites" button to save a song.
+
+### View Favorites:
+- Go to the Favorites page to view and play your favorite songs.
+
 
