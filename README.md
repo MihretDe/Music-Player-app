@@ -13,24 +13,6 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
 - **Favorites Page**: View and play songs you've added to your favorites.
 
 ---
-
-## 🛠️ Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/music-app.git
-2. Navigate to the project directory:
-   ```bash
-   cd music-app
-3. Install dependencies:
-   ```bash
-   flutter pub get
-4. Run the app:
-  ```bash
-  flutter run
-
----
-
 ## 💻 Usage
 
 ### Play Songs:
@@ -48,5 +30,25 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
 
 ### View Favorites:
 - Go to the Favorites page to view and play your favorite songs.
+
+---
+## 🛠️ Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/music-app.git
+2. Navigate to the project directory:
+   ```bash
+   cd music-app
+3. Install dependencies:
+   ```bash
+   flutter pub get
+4. Run the app:
+  ```bash
+  flutter run
+
+---
+
+
 
 
