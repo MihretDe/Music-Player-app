@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   void goToSong(int songIndex) {
     playlistProvider.currentSongIndex = songIndex;
     setState(() {
-      isPlaying = true; // Set playing state when navigating to a song
+      isPlaying = true; 
     });
     Navigator.push(
       context,
@@ -127,7 +127,6 @@ class _HomePageState extends State<HomePage> {
 
           return Column(
             children: [
-              // Header Section
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -170,7 +169,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Song List Section
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(8.0),
@@ -218,10 +216,10 @@ class _HomePageState extends State<HomePage> {
         builder: (context, value, child) {
           final currentSongIndex = playlistProvider.currentSongIndex;
           if (currentSongIndex == null || currentSongIndex < 0) {
-            return const SizedBox.shrink(); // Hide if no song is playing
+            return const SizedBox.shrink();
           }
 
-          final currentSong = playlistProvider.playlist![currentSongIndex];
+          final currentSong = playlistProvider.playlist[currentSongIndex];
 
           return BottomAppBar(
             color: Theme.of(context).colorScheme.primary,

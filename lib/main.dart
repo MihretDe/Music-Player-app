@@ -17,10 +17,10 @@ void main() {
     const MyAppWithSplash({super.key});
 
     @override
-    _MyAppWithSplashState createState() => _MyAppWithSplashState();
+    MyAppWithSplashState createState() => MyAppWithSplashState();
   }
 
-  class _MyAppWithSplashState extends State<MyAppWithSplash> {
+  class MyAppWithSplashState extends State<MyAppWithSplash> {
     bool _isLoading = true;
 
     @override

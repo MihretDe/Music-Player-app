@@ -51,7 +51,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
       ),
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -63,7 +62,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
               ),
             ),
           ),
-          // Main content
           Consumer<PlaylistProvider>(
             builder: (context, value, child) {
               final List<Song>? playlist = value.playlist;

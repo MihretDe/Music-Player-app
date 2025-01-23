@@ -113,7 +113,6 @@ class _SongPageState extends State<SongPage> {
                     ),
                   ),
                   const Spacer(),
-                  // Timer and Controls
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25),
                     child: Row(
@@ -208,13 +207,12 @@ class _SongPageState extends State<SongPage> {
                         ),
                       ),
                       const SizedBox(width: 20),
-                      // Add Favorite Button
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
                               currentSong.isFavorite =
-                                  !currentSong.isFavorite; // Toggle favorite
+                                  !currentSong.isFavorite; 
                             });
                           },
                           child: Box(
