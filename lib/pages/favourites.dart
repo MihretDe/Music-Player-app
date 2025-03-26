@@ -22,12 +22,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
     loadFavorites(playlist);
   }
 
-  // Function to navigate to SongPage
   void goToSong(BuildContext context, int songIndex) {
     final playlistProvider =
         Provider.of<PlaylistProvider>(context, listen: false);
-    playlistProvider.currentSongIndex = songIndex;
-
+    playlistProvider.setCurrentPlaylist('Favorites', playlist,
+        songIndex: songIndex);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SongPage()),
@@ -36,126 +35,119 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Favorite Songs',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge?.color,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDarkMode
-                    ? [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)]
-                    : [Color(0xFF1D2671), Color(0xFFC33764)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      body: Consumer<PlaylistProvider>(
+        builder: (context, value, child) {
+          final List<Song>? playlist = value.playlist;
+          if (playlist == null) {
+            return Center(
+              child: Text(
+                'No playlist available',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey.shade600,
+                ),
               ),
-            ),
-          ),
-          Consumer<PlaylistProvider>(
-            builder: (context, value, child) {
-              final List<Song>? playlist = value.playlist;
+            );
+          }
 
-              final List<Map<String, dynamic>> favoriteSongsWithIndices =
-                  playlist!
-                      .asMap()
-                      .entries
-                      .where((entry) => entry.value.isFavorite)
-                      .map((entry) => {
-                            'index':
-                                entry.key, 
-                            'song': entry.value, 
-                          })
-                      .toList();
-              return favoriteSongsWithIndices.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No favorite songs yet.',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
+          final List<Song> favorites =
+              playlist.where((song) => song.isFavorite).toList();
+
+          if (favorites.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.favorite_border,
+                      size: 64, color: Colors.grey.shade400),
+                  SizedBox(height: 16),
+                  Text(
+                    'No favorite songs yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: favorites.length,
+            itemBuilder: (context, index) {
+              final Song song = favorites[index];
+              return GestureDetector(
+                onTap: () => goToSong(context, playlist.indexOf(song)),
+                child: Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    title: Text(
+                      song.songName,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(
-                          top: 80.0), 
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 20.0,
-                        ),
-                        itemCount: favoriteSongsWithIndices.length,
-                        itemBuilder: (context, index) {
-                          final songData = favoriteSongsWithIndices[index];
-                          final song = songData['song'] as Song;
-                          final originalIndex = songData['index'];
-                          return Card(
-                            color: Colors.white.withOpacity(0.15),
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.0),
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 12.0,
-                                horizontal: 16.0,
-                              ),
-                              leading: Icon(
-                                Icons.favorite,
-                                color: Colors.redAccent,
-                                size: 28,
-                              ),
-                              title: Text(
-                                song.songName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              subtitle: Text(
-                                song.artistName,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
-                              ),
-                              trailing: GestureDetector(
-                                onTap: () {
-                                  goToSong(context, originalIndex);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.2),
-                                  ),
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: const Icon(
-                                    Icons.play_arrow,
-                                    size: 24,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      song.artistName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
                       ),
-                    );
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.play_arrow,
+                              color: Colors.blue.shade900),
+                          onPressed: () =>
+                              goToSong(context, playlist.indexOf(song)),
+                        ),
+                        IconButton(
+                          icon:
+                              Icon(Icons.favorite, color: Colors.red.shade400),
+                          onPressed: () {
+                            setState(() {
+                              song.isFavorite = false;
+                            });
+                            saveFavorites(playlist);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             },
-          ),
-        ],
+          );
+        },
       ),
     );
   }

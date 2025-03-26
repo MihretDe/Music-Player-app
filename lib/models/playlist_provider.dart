@@ -8,6 +8,8 @@ import 'package:path/path.dart' as p;
 
 class PlaylistProvider extends ChangeNotifier {
   final List<Song> _playlist = [];
+  final Map<String, List<Song>> _playlists = {};
+  String? _currentPlaylistName;
   int? _currentSongIndex;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -27,7 +29,7 @@ class PlaylistProvider extends ChangeNotifier {
     final storagePermission = await Permission.manageExternalStorage.request();
     if (storagePermission.isGranted) {
       print('MANAGE_EXTERNAL_STORAGE permission granted');
-      await loadAllFiles(); 
+      await loadAllFiles();
     } else {
       print('MANAGE_EXTERNAL_STORAGE permission denied');
     }
@@ -36,28 +38,25 @@ class PlaylistProvider extends ChangeNotifier {
   // Load music files from local storage
   Future<void> loadAllFiles() async {
     try {
-      final Directory rootDir =
-          Directory('/storage/emulated/0/Music'); 
+      final Directory rootDir = Directory('/storage/emulated/0/Music');
       final List<FileSystemEntity> files =
           rootDir.listSync(recursive: true, followLinks: false);
-      // print(files);
+
       for (var file in files) {
         if (file is File && _isAudioFile(file.path)) {
-          // print('Audio file found: ${file.path}');
-          String fileName = p.basenameWithoutExtension(
-              file.path); 
-
-          List<String> parts = fileName.split(' - ');
-
+          String fileName = p.basenameWithoutExtension(file.path);
           String artistName = 'Unknown';
           String songName = fileName;
 
-          if (parts.length == 2) {
-            artistName = parts[0];
-            songName = parts[1];
+          // Try to extract artist name from the file name
+          if (fileName.contains(' - ')) {
+            List<String> parts = fileName.split(' - ');
+            if (parts.length >= 2) {
+              artistName = parts[0].trim();
+              songName = parts.sublist(1).join(' - ').trim();
+            }
           }
 
-          
           _playlist.add(Song(
             audioPath: file.path,
             artistName: artistName,
@@ -66,7 +65,6 @@ class PlaylistProvider extends ChangeNotifier {
         }
       }
       notifyListeners();
-      // print("playlist: $_playlist");
     } catch (e) {
       print("Error accessing files: $e");
     }
@@ -79,13 +77,50 @@ class PlaylistProvider extends ChangeNotifier {
   }
 
   // Play the selected song
-  void play() async {
-    if (_currentSongIndex == null) return;
-    final String path = _playlist[_currentSongIndex!].audioPath;
-    print('$path path');
-    await _audioPlayer.stop();
-    await _audioPlayer.play(DeviceFileSource(path));
+  void play({String? audioPath, String? playlistName, int? songIndex}) async {
+    String path;
+    Song? currentSong;
+
+    if (audioPath != null) {
+      // Play the audio from the provided path
+      path = audioPath;
+    } else if (_currentSongIndex != null && _currentPlaylistName != null) {
+      // Play the currently selected song in the current playlist
+      final currentPlaylist = _playlists[_currentPlaylistName!];
+      if (currentPlaylist == null ||
+          _currentSongIndex! >= currentPlaylist.length) {
+        print("Invalid playlist or song index");
+        return;
+      }
+      currentSong = currentPlaylist[_currentSongIndex!];
+      path = currentSong.audioPath;
+    } else {
+      // No path provided and no current song selected
+      print("No song to play");
+      return;
+    }
+
+    print('Playing audio at path: $path');
+    await _audioPlayer.stop(); // Stop any ongoing playback
+    await _audioPlayer.play(DeviceFileSource(path)); // Play the selected song
     _isPlaying = true;
+    notifyListeners();
+  }
+
+  // Set current playlist and song
+  void setCurrentPlaylist(String playlistName, List<Song> songs,
+      {int? songIndex}) {
+    _currentPlaylistName = playlistName;
+    _playlists[playlistName] = songs;
+    if (songIndex != null) {
+      _currentSongIndex = songIndex;
+      // Ensure the song exists in the playlist
+      if (_currentSongIndex! >= songs.length) {
+        _currentSongIndex = 0;
+      }
+      // Play the selected song immediately
+      play();
+    }
     notifyListeners();
   }
 
@@ -119,8 +154,13 @@ class PlaylistProvider extends ChangeNotifier {
 
   // Play previous song
   void playPrevious() {
+    if (_currentPlaylistName == null || _currentSongIndex == null) return;
+
+    final currentPlaylist = _playlists[_currentPlaylistName!];
+    if (currentPlaylist == null) return;
+
     if (_currentSongIndex == 0) {
-      _currentSongIndex = _playlist.length - 1;
+      _currentSongIndex = currentPlaylist.length - 1;
     } else {
       _currentSongIndex = _currentSongIndex! - 1;
     }
@@ -129,7 +169,12 @@ class PlaylistProvider extends ChangeNotifier {
 
   // Play next song
   void playNext() {
-    if (_currentSongIndex == _playlist.length - 1) {
+    if (_currentPlaylistName == null || _currentSongIndex == null) return;
+
+    final currentPlaylist = _playlists[_currentPlaylistName!];
+    if (currentPlaylist == null) return;
+
+    if (_currentSongIndex == currentPlaylist.length - 1) {
       _currentSongIndex = 0;
     } else {
       _currentSongIndex = _currentSongIndex! + 1;
@@ -158,9 +203,12 @@ class PlaylistProvider extends ChangeNotifier {
     _audioPlayer.dispose();
     super.dispose();
   }
+
   void stopCurrentSong() {
-  _audioPlayer.stop(); 
-}
+    _audioPlayer.stop();
+    _isPlaying = false;
+    notifyListeners();
+  }
 
   // Getters and Setters
   List<Song> get playlist => _playlist;
@@ -168,6 +216,8 @@ class PlaylistProvider extends ChangeNotifier {
   bool get isPlaying => _isPlaying;
   Duration get currentDuration => _currentDuration;
   Duration get totalDuration => _totalDuration;
+  String? get currentPlaylistName => _currentPlaylistName;
+  Map<String, List<Song>> get playlists => _playlists;
 
   set currentSongIndex(int? newIndex) {
     _currentSongIndex = newIndex;
