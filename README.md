@@ -11,6 +11,9 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
 - **Seek to Position**: Jump to any part of the song with the seek functionality.
 - **Add to Favorites**: Mark your favorite songs for quick access.
 - **Favorites Page**: View and play songs you've added to your favorites.
+- **Search**: Find songs quickly by artist name or song title.
+- **Create Playlist**: Organize your favorite songs into custom playlists.
+- **Play Playlist**: Enjoy your curated playlists without interruptions.
 
 ---
 ## 💻 Usage
@@ -24,6 +27,14 @@ The Music App is a simple and elegant audio player that lets you enjoy your favo
 
 ### Seek Position:
 - Drag the progress bar to move to a specific part of the song.
+### Search
+- Use the search bar to find songs quickly by artist name or song title.
+
+### Create a Playlist
+- Select songs and add them to a new or existing playlist.
+
+### Play a Playlist
+- Open a playlist and tap the play button to enjoy your curated songs.
 
 ### Add to Favorites:
 - Tap the "Add to Favorites" button to save a song.
