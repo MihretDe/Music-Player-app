@@ -19,11 +19,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late PlaylistProvider playlistProvider;
   bool isPlaying = false;
+  String searchQuery = '';
+  List<Song> filteredSongs = [];
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     playlistProvider = Provider.of<PlaylistProvider>(context, listen: false);
+    filteredSongs = playlistProvider.playlist;
   }
 
   void goToSong(int songIndex) {
@@ -172,6 +175,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void filterSongs(String query) {
+    setState(() {
+      searchQuery = query;
+      if (query.isEmpty) {
+        filteredSongs = playlistProvider.playlist;
+      } else {
+        filteredSongs = playlistProvider.playlist.where((song) {
+          return song.songName.toLowerCase().contains(query.toLowerCase()) ||
+              song.artistName.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,79 +276,94 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      body: Consumer<PlaylistProvider>(
-        builder: (context, value, child) {
-          final List<Song>? playlist = value.playlist;
-
-          if (playlist == null || playlist.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.music_off, size: 64, color: Colors.grey.shade400),
-                  SizedBox(height: 16),
-                  Text(
-                    "No songs available",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                    vertical: 20.0, horizontal: 16.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.blue.shade900,
-                      Colors.blue.shade800,
-                      Colors.blue.shade700,
-                    ],
-                  ),
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(20)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome Back!',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Your Playlist',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.blue.shade900.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: Colors.blue.shade900.withOpacity(0.2),
                 ),
               ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
+              child: TextField(
+                onChanged: filterSongs,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search songs or artists...',
+                  hintStyle: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.color
+                        ?.withOpacity(0.5),
+                  ),
+                  prefixIcon: Icon(Icons.search, color: Colors.blue.shade900),
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ),
+          ),
+          // Songs List
+          Expanded(
+            child: Consumer<PlaylistProvider>(
+              builder: (context, value, child) {
+                final playlist = value.playlist;
+
+                if (playlist.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.music_off,
+                            size: 64, color: Colors.grey.shade400),
+                        SizedBox(height: 16),
+                        Text(
+                          "No songs available",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (filteredSongs.isEmpty && searchQuery.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off,
+                            size: 64, color: Colors.grey.shade400),
+                        SizedBox(height: 16),
+                        Text(
+                          'No songs found for "$searchQuery"',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
                   padding: const EdgeInsets.all(8.0),
-                  itemCount: playlist.length,
+                  itemCount: filteredSongs.length,
                   itemBuilder: (context, index) {
-                    final Song song = playlist[index];
+                    final Song song = filteredSongs[index];
                     return GestureDetector(
-                      onTap: () => goToSong(index),
+                      onTap: () => goToSong(playlist.indexOf(song)),
                       child: Card(
                         elevation: 2,
                         margin: const EdgeInsets.symmetric(
@@ -365,7 +397,8 @@ class _HomePageState extends State<HomePage> {
                               IconButton(
                                 icon: Icon(Icons.play_arrow,
                                     color: Colors.blue.shade900),
-                                onPressed: () => goToSong(index),
+                                onPressed: () =>
+                                    goToSong(playlist.indexOf(song)),
                               ),
                             ],
                           ),
@@ -373,11 +406,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   },
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Consumer<PlaylistProvider>(
         builder: (context, value, child) {

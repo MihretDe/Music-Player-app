@@ -4,7 +4,7 @@ import 'package:music/models/song.dart';
 import 'package:music/pages/song_page.dart';
 import 'package:provider/provider.dart';
 
-class PlaylistDetailPage extends StatelessWidget {
+class PlaylistDetailPage extends StatefulWidget {
   final String playlistName;
   final List<Song> songs;
 
@@ -15,6 +15,34 @@ class PlaylistDetailPage extends StatelessWidget {
   });
 
   @override
+  State<PlaylistDetailPage> createState() => _PlaylistDetailPageState();
+}
+
+class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
+  String searchQuery = '';
+  List<Song> filteredSongs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    filteredSongs = widget.songs;
+  }
+
+  void filterSongs(String query) {
+    setState(() {
+      searchQuery = query;
+      if (query.isEmpty) {
+        filteredSongs = widget.songs;
+      } else {
+        filteredSongs = widget.songs.where((song) {
+          return song.songName.toLowerCase().contains(query.toLowerCase()) ||
+              song.artistName.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
@@ -22,164 +50,98 @@ class PlaylistDetailPage extends StatelessWidget {
         slivers: [
           // Collapsing App Bar with Playlist Image
           SliverAppBar(
-            expandedHeight: 250.0,
+            expandedHeight: 200.0,
             floating: false,
             pinned: true,
             stretch: true,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.blurBackground,
-              ],
               title: Text(
-                playlistName,
+                widget.playlistName,
                 style: TextStyle(
                   color: Theme.of(context).textTheme.titleLarge?.color,
                   fontWeight: FontWeight.bold,
-                  fontSize: 24,
                 ),
               ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.blue.shade900,
-                          Colors.blue.shade800,
-                          Colors.blue.shade700,
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Animated background pattern
-                  CustomPaint(
-                    painter: MusicPatternPainter(
-                      color: Colors.white.withOpacity(0.05),
-                    ),
-                  ),
-                  // Music note icon with animation
-                  Center(
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: const Duration(milliseconds: 800),
-                      curve: Curves.easeOutBack,
-                      builder: (context, value, child) {
-                        return Transform.scale(
-                          scale: value,
-                          child: const Icon(
-                            Icons.music_note,
-                            size: 100,
-                            color: Colors.white24,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Playlist Info Section
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade900.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.blue.shade900.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.music_note,
-                              size: 16,
-                              color: Colors.blue.shade900,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${songs.length} songs',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      // Shuffle Play Button
-                      IconButton(
-                        onPressed: () {
-                          // Implement shuffle play functionality
-                        },
-                        icon: Icon(
-                          Icons.shuffle,
-                          color: Colors.blue.shade900,
-                        ),
-                        tooltip: 'Shuffle Play',
-                      ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.blue.shade900,
+                      Colors.blue.shade800,
+                      Colors.blue.shade700,
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Divider(
-                    height: 1,
-                    color: Colors.grey.shade200,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.playlist_play,
+                    size: 100,
+                    color: Colors.white.withOpacity(0.8),
                   ),
-                ],
+                ),
               ),
             ),
           ),
-
+          // Search Bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade900.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: Colors.blue.shade900.withOpacity(0.2),
+                  ),
+                ),
+                child: TextField(
+                  onChanged: filterSongs,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search songs or artists...',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.color
+                          ?.withOpacity(0.5),
+                    ),
+                    prefixIcon: Icon(Icons.search, color: Colors.blue.shade900),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                  ),
+                ),
+              ),
+            ),
+          ),
           // Songs List
-          songs.isEmpty
+          filteredSongs.isEmpty
               ? SliverFillRemaining(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0.0, end: 1.0),
-                          duration: const Duration(milliseconds: 800),
-                          curve: Curves.easeOutBack,
-                          builder: (context, value, child) {
-                            return Transform.scale(
-                              scale: value,
-                              child: Icon(
-                                Icons.music_off,
-                                size: 64,
-                                color: Colors.grey.shade400,
-                              ),
-                            );
-                          },
+                        Icon(
+                          searchQuery.isEmpty
+                              ? Icons.music_off
+                              : Icons.search_off,
+                          size: 64,
+                          color: Colors.grey.shade400,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
-                          'No songs in this playlist!',
+                          searchQuery.isEmpty
+                              ? 'No songs in this playlist'
+                              : 'No songs found for "$searchQuery"',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
                             color: Colors.grey.shade600,
                           ),
                         ),
@@ -190,7 +152,7 @@ class PlaylistDetailPage extends StatelessWidget {
               : SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final song = songs[index];
+                      final song = filteredSongs[index];
                       return Material(
                         color: Colors.transparent,
                         child: InkWell(
@@ -199,8 +161,8 @@ class PlaylistDetailPage extends StatelessWidget {
                                 Provider.of<PlaylistProvider>(context,
                                     listen: false);
                             playlistProvider.setCurrentPlaylist(
-                                playlistName, songs,
-                                songIndex: index);
+                                widget.playlistName, widget.songs,
+                                songIndex: widget.songs.indexOf(song));
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -242,33 +204,22 @@ class PlaylistDetailPage extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                // Play Button with animation
-                                TweenAnimationBuilder<double>(
-                                  tween: Tween(begin: 0.0, end: 1.0),
-                                  duration: Duration(
-                                      milliseconds: 300 + (index * 100)),
-                                  curve: Curves.easeOutBack,
-                                  builder: (context, value, child) {
-                                    return Transform.scale(
-                                      scale: value,
-                                      child: Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.blue.shade900
-                                              .withOpacity(0.1),
-                                          border: Border.all(
-                                            color: Colors.blue.shade900
-                                                .withOpacity(0.2),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.play_arrow,
-                                          color: Colors.blue.shade900,
-                                        ),
-                                      ),
+                                // Play Button
+                                IconButton(
+                                  icon: Icon(Icons.play_arrow,
+                                      color: Colors.blue.shade900),
+                                  onPressed: () {
+                                    final playlistProvider =
+                                        Provider.of<PlaylistProvider>(context,
+                                            listen: false);
+                                    playlistProvider.setCurrentPlaylist(
+                                        widget.playlistName, widget.songs,
+                                        songIndex: widget.songs.indexOf(song));
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SongPage()),
                                     );
                                   },
                                 ),
@@ -278,7 +229,7 @@ class PlaylistDetailPage extends StatelessWidget {
                         ),
                       );
                     },
-                    childCount: songs.length,
+                    childCount: filteredSongs.length,
                   ),
                 ),
         ],

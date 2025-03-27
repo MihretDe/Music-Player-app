@@ -20,7 +20,9 @@ class _SongPageState extends State<SongPage> {
   @override
   void initState() {
     super.initState();
-    playlist = Provider.of<PlaylistProvider>(context, listen: false).playlist;
+    final playlistProvider =
+        Provider.of<PlaylistProvider>(context, listen: false);
+    playlist = playlistProvider.currentPlaylist;
     loadFavorites(playlist);
   }
 
@@ -161,8 +163,14 @@ class _SongPageState extends State<SongPage> {
   Widget build(BuildContext context) {
     return Consumer<PlaylistProvider>(
       builder: (context, value, child) {
-        final playlist = value.playlist;
-        final currentSong = playlist[value.currentSongIndex ?? 0];
+        final currentSong = value.currentSong;
+        if (currentSong == null) {
+          return Scaffold(
+            body: Center(
+              child: Text('No song selected'),
+            ),
+          );
+        }
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,

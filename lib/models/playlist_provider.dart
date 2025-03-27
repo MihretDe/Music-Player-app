@@ -94,6 +94,8 @@ class PlaylistProvider extends ChangeNotifier {
       }
       currentSong = currentPlaylist[_currentSongIndex!];
       path = currentSong.audioPath;
+      print('Playing song from playlist: ${currentSong.songName}');
+      print('Artist: ${currentSong.artistName}');
     } else {
       // No path provided and no current song selected
       print("No song to play");
@@ -110,14 +112,21 @@ class PlaylistProvider extends ChangeNotifier {
   // Set current playlist and song
   void setCurrentPlaylist(String playlistName, List<Song> songs,
       {int? songIndex}) {
+    print('Setting current playlist: $playlistName');
+    print('Number of songs: ${songs.length}');
+    print('Song index: $songIndex');
+
     _currentPlaylistName = playlistName;
     _playlists[playlistName] = songs;
+
     if (songIndex != null) {
       _currentSongIndex = songIndex;
       // Ensure the song exists in the playlist
       if (_currentSongIndex! >= songs.length) {
         _currentSongIndex = 0;
       }
+      print('Current song: ${songs[_currentSongIndex!].songName}');
+      print('Current artist: ${songs[_currentSongIndex!].artistName}');
       // Play the selected song immediately
       play();
     }
@@ -225,5 +234,18 @@ class PlaylistProvider extends ChangeNotifier {
       play();
     }
     notifyListeners();
+  }
+
+  // Get current playlist
+  List<Song> get currentPlaylist => _currentPlaylistName != null
+      ? _playlists[_currentPlaylistName!] ?? []
+      : [];
+
+  // Get current song
+  Song? get currentSong {
+    if (_currentPlaylistName == null || _currentSongIndex == null) return null;
+    final playlist = _playlists[_currentPlaylistName!];
+    if (playlist == null || _currentSongIndex! >= playlist.length) return null;
+    return playlist[_currentSongIndex!];
   }
 }
